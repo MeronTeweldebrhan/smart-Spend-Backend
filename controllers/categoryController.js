@@ -1,5 +1,7 @@
 import Category from "../models/Category.js";
 import { verifyCategoryOwnership } from "../utlis/verifyOwnership.js";
+
+///===Creat Category====///
 const createCategory = async (req, res) => {
   try {
     const category = await Category.create({
@@ -17,6 +19,7 @@ const createCategory = async (req, res) => {
   }
 };
 
+///===get all users Categroy====///
 const getcategory = async (req, res) => {
   try {
     const category = await Category.find({ createdby: req.user._id });
@@ -27,9 +30,11 @@ const getcategory = async (req, res) => {
     res.status(404).json({ message: error.message });
   }
 };
+
+///===Get Single Category===///
 const getcategorybyid = async (req, res) => {
   try {
-    ///===verfif ownership===//
+    ///===verfify ownership===//
     const categoryId = req.params.id;
     await verifyCategoryOwnership(req.user._id, categoryId);
 
@@ -41,4 +46,38 @@ const getcategorybyid = async (req, res) => {
     res.status(404).json({ message: error.message });
   }
 };
-export { createCategory, getcategory, getcategorybyid };
+
+///===update Catergroy===///
+const updateCategory =async (req,res)=>{
+    try {
+        const categoryId = req.params.id;
+    await verifyCategoryOwnership(req.user._id, categoryId);
+        
+        const updated=await Category.findByIdAndUpdate(req.params.id,
+      req.body,
+      {
+        new: true,
+      }
+    ) .populate("createdby", "username");
+    res.json(updated)
+    } catch (error) {
+         console.error(error);
+    res.status(500).json({ message: error.message });
+    }
+}
+
+///===Delete Category===//
+
+const deleteCategory=async (req,res)=>{
+    try {
+         const categoryId = req.params.id;
+    await verifyCategoryOwnership(req.user._id, categoryId);
+        const { id } = req.params;
+        await Category.findByIdAndDelete(id)
+        res.json({message:"category deleted"})
+    } catch (error) {
+        console.error(error);
+    res.status(500).json({ message: error.message });
+    }
+}
+export { createCategory, getcategory, getcategorybyid,updateCategory,deleteCategory };
