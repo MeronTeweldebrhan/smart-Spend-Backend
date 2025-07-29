@@ -4,13 +4,13 @@ import Category from "../models/Category.js";
 export const getOrCreateDefaultCategory = async (userId) => {
   let category = await Category.findOne({
     name: "Uncategorized",
-    createdBy: userId
+    createdby: userId
   });
 
   if (!category) {
     category = await Category.create({
       name: "Uncategorized",
-      createdBy: userId
+      createdby: userId
     });
   }
 
@@ -29,7 +29,7 @@ export const resolveCategoryId = async (inputCategory, userId) => {
   if (isValidObjectId) return inputCategory;
 
   // Try to find category by name
-  const categoryDoc = await Category.findOne({ name: inputCategory, createdBy: userId });
+  const categoryDoc = await Category.findOne({ name: inputCategory, createdby: userId });
   if (!categoryDoc) {
     throw new Error(`Category '${inputCategory}' not found. Please provide a valid category.`);
   }
