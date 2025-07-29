@@ -1,5 +1,6 @@
 import express from 'express'
 import dotenv from 'dotenv'
+import cors from 'cors'
 import connection from './config/connection.js'
 import userRoutes from './routes/userRoutes.js'
 import transactionRoutes from './routes/transactionRoutes.js'
@@ -11,6 +12,19 @@ const app=express()
 app.use(express.json())
 const PORT = process.env.PORT || 3000
 connection()
+///==Cors Acess ==//
+const allowedOrgins =[
+    'http://localhost:5173'
+]
+app.use(cors({
+    origin:function (orgin,callback){
+        if(!orgin || allowedOrgins.includes(orgin)){
+            callback(null,true)
+        } else{
+            callback(new Error('CORS not allowed from this orgin :'+orgin))
+        }
+    }
+}))
 
 ///====ROUTES====///
 app.use('/api/users',userRoutes)
