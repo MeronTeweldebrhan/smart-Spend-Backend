@@ -4,25 +4,23 @@ import bcrypt from 'bcrypt'
 const userSchema = new Schema({
   username: {
     type: String,
-    required: true,
+    required: [true, 'Name is required'],
     unique: true,
     trim: true,
   },
   email: {
     type: String,
-    required: true,
+     required: [true, 'Email is required'],
     unique: true,
     match: [/.+@.+\..+/, 'Must use a valid email address'],
   },
   password: {
     type: String,
-    minlength: 5,
-    required: function(){
-      return !this.githubId;
-    }
+    minlength: 4,
+    required: [true, 'Password is required'],
 
   }
-});
+},{timestamps:true});
  
 // hash user password
 userSchema.pre('save', async function (next) {
