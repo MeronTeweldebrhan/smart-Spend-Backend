@@ -38,7 +38,8 @@ const getcategorybyid = async (req, res) => {
     const categoryId = req.params.id;
     await verifyCategoryOwnership(req.user._id, categoryId);
 
-    const category = await findById(categoryId);
+    const { id } = req.params;
+    const category = await Category.findById(id);
 
     res.json(category);
   } catch (error) {
