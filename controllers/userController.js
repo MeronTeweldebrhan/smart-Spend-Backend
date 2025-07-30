@@ -6,12 +6,13 @@ import { signToken } from "../utlis/auth.js";
 const createUser = async (req, res) => {
   try {
     const newUser = await User.create(req.body);
+    const token =  signToken(newUser);
     ///==defualt category===//
     await Category.create({
       name: "Uncategorized",
-      createdBy: newUser._id,
+      createdby: newUser._id,
     });
-    res.status(201).json(newUser);
+     res.status(201).json({ token, user: newUser })
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message });
