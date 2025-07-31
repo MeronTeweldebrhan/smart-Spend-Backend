@@ -4,7 +4,7 @@ import { verifyAccountAccess } from "../utlis/verifyOwnership.js";
 ///===Creat Category====///
 const createCategory = async (req, res) => {
   try {
-    const accountId=req.user.account
+    const accountId = req.body.accountId
 
     //==verify access===//
     await verifyAccountAccess(req.user._id, accountId);
@@ -28,7 +28,7 @@ const createCategory = async (req, res) => {
 ///===get all users Categroy====///
 const getcategory = async (req, res) => {
   try {
-    const accountId=req.user.account
+    const accountId = req.body.accountId || req.query.accountId
 
     //==verify access===//
     await verifyAccountAccess(req.user._id, accountId);

@@ -6,7 +6,7 @@ const router =express.Router()
 router.use(authMiddleware)
 
 router.post('/',createCategory)
-router.get('/',getcategory)
+router.post('/all',getcategory)
 router.put('/:id',updateCategory)
 router.delete('/:id',deleteCategory)
 router.get('/:id',getcategorybyid)
