@@ -7,7 +7,7 @@ import { verifyAccountAccess } from "../utlis/verifyOwnership.js";
 const creatTransaction = async (req, res) => {
   try {
     const payload = Array.isArray(req.body) ? req.body : [req.body];
-     const accountId = req.user.account
+     const accountId = req.body.accountId
  if (!accountId) {
       throw new Error("Missing account ID in transaction payload");
     }
@@ -48,8 +48,8 @@ const creatTransaction = async (req, res) => {
 const getTransactions = async (req, res) => {
   try {
     // ///===verfif ownership===//
-    // const transactionId = req.params.id;
-    // await verifyTransactionOwnership(req.user._id, transactionId);
+    const { accountId } = req.query;
+    await verifyAccountAccess(req.user._id, accountId);
     const {
       type, // income or expense
       category, // category ObjectId
@@ -59,7 +59,7 @@ const getTransactions = async (req, res) => {
       maxAmount, // number
     } = req.query;
 
-    const filters = { createdby: req.user._id };
+    const filters = { account: accountId } ;
 
     if (type) filters.type = type;
 
@@ -94,7 +94,7 @@ const getTransactions = async (req, res) => {
 
 const updatetransaction = async (req, res) => {
   try {
-     const accountId=req.user.account
+     const accountId=req.body.accountId || req.query.accountId
 
     //==verify access===//
     await verifyAccountAccess(req.user._id, accountId);
@@ -123,7 +123,7 @@ const updatetransaction = async (req, res) => {
 const deleteTransaction = async (req, res) => {
   try {
     ///===verfif ownership===//
-     const accountId=req.user.account
+     const accountId=req.body.accountId || req.query.accountId
     await verifyAccountAccess(req.user._id, accountId);
 
 
@@ -144,9 +144,7 @@ const deleteTransaction = async (req, res) => {
 
 const gettransactionbyID = async (req, res) => {
   try {
-    ///===verfif ownership===//
-    const accountId=req.user.account
-    await verifyAccountAccess(req.user._id, accountId);
+   
 
     const { id } = req.params;
     const transaction = await Transaction.findById(id)
@@ -157,6 +155,9 @@ const gettransactionbyID = async (req, res) => {
     if (!transaction) {
       return res.status(404).json({ message: "Transaction not found" });
     }
+     ///===verfif ownership===//
+    
+    await verifyAccountAccess(req.user._id, transaction.account._id);
     res.json(transaction);
   } catch (error) {
     console.error(error);
