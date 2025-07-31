@@ -1,17 +1,23 @@
 import Category from "../models/Category.js";
-import { verifyCategoryOwnership } from "../utlis/verifyOwnership.js";
+import { verifyAccountAccess } from "../utlis/verifyOwnership.js";
 
 ///===Creat Category====///
 const createCategory = async (req, res) => {
   try {
+    const accountId=req.user.account
+
+    //==verify access===//
+    await verifyAccountAccess(req.user._id, accountId);
+
     const category = await Category.create({
       ...req.body,
       createdby: req.user._id,
+      account:accountId
+
     });
-    const populatedCategory = await Category.findById(category._id).populate(
-      "createdby",
-      "username"
-    );
+    const populatedCategory = await Category.findById(category._id)
+    .populate("createdby","username")
+    .populate("account", "name");
     res.status(201).json(populatedCategory);
   } catch (error) {
     console.error(error);
@@ -22,7 +28,13 @@ const createCategory = async (req, res) => {
 ///===get all users Categroy====///
 const getcategory = async (req, res) => {
   try {
-    const category = await Category.find({ createdby: req.user._id });
+    const accountId=req.user.account
+
+    //==verify access===//
+    await verifyAccountAccess(req.user._id, accountId);
+
+    const category = await Category.find({account:accountId })
+    .populate("createdby","username");
 
     res.json(category);
   } catch (error) {
@@ -35,13 +47,18 @@ const getcategory = async (req, res) => {
 const getcategorybyid = async (req, res) => {
   try {
     ///===verfify ownership===//
-    const categoryId = req.params.id;
-    await verifyCategoryOwnership(req.user._id, categoryId);
+     const { id: categoryId } = req.params;
+    const category = await Category.findById(categoryId);
 
-    const { id } = req.params;
-    const category = await Category.findById(id);
+    if (!category) throw new Error("Category not found");
 
-    res.json(category);
+    await verifyAccountAccess(req.user._id, category.account);
+
+    const populated = await Category.findById(categoryId)
+      .populate("createdby", "username")
+      .populate("account", "name");
+
+    res.json(populated);
   } catch (error) {
     console.error(error.message);
     res.status(404).json({ message: error.message });
@@ -51,34 +68,41 @@ const getcategorybyid = async (req, res) => {
 ///===update Catergroy===///
 const updateCategory =async (req,res)=>{
     try {
-        const categoryId = req.params.id;
-    await verifyCategoryOwnership(req.user._id, categoryId);
-        
-        const updated=await Category.findByIdAndUpdate(req.params.id,
-      req.body,
-      {
-        new: true,
-      }
-    ) .populate("createdby", "username");
-    res.json(updated)
-    } catch (error) {
-         console.error(error);
+         const { id: categoryId } = req.params;
+    const category = await Category.findById(categoryId);
+    if (!category) throw new Error("Category not found");
+
+    await verifyAccountAccess(req.user._id, category.account);
+
+    const updated = await Category.findByIdAndUpdate(categoryId, req.body, {
+      new: true,
+    })
+      .populate("createdby", "username")
+      .populate("account", "name");
+
+    res.json(updated);
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ message: error.message });
-    }
+  }
 }
 
 ///===Delete Category===//
 
 const deleteCategory=async (req,res)=>{
     try {
-         const categoryId = req.params.id;
-    await verifyCategoryOwnership(req.user._id, categoryId);
-        const { id } = req.params;
-        await Category.findByIdAndDelete(id)
-        res.json({message:"category deleted"})
-    } catch (error) {
-        console.error(error);
+         const { id: categoryId } = req.params;
+    const category = await Category.findById(categoryId);
+    if (!category) throw new Error("Category not found");
+
+    await verifyAccountAccess(req.user._id, category.account);
+
+    await Category.findByIdAndDelete(categoryId);
+
+    res.json({ message: "Category deleted" });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ message: error.message });
-    }
+  }
 }
 export { createCategory, getcategory, getcategorybyid,updateCategory,deleteCategory };

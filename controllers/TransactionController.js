@@ -1,29 +1,48 @@
 import Transaction from "../models/Transaction.js";
 import { resolveCategoryId } from "../utlis/getOrCreateDefaultCategory.js";
-import { verifyTransactionOwnership } from "../utlis/verifyOwnership.js";
+// import { verifyTransactionOwnership } from "../utlis/verifyOwnership.js";
+import { verifyAccountAccess } from "../utlis/verifyOwnership.js";
 
 ///== ADD new Transaction ==//
 const creatTransaction = async (req, res) => {
   try {
-    const categoryId = await resolveCategoryId(req.body.category, req.user._id);
+    const payload = Array.isArray(req.body) ? req.body : [req.body];
+     const accountId = req.user.account
+ if (!accountId) {
+      throw new Error("Missing account ID in transaction payload");
+    }
+    // Ensure user has access to the target account
+    await verifyAccountAccess(req.user._id, accountId);
+    const transactionsToCreate = await Promise.all(
+      payload.map(async (txn) => {
+        const categoryId = await resolveCategoryId(txn.category, req.user._id,accountId);
+        return {
+          ...txn,
+          amount: Number(txn.amount),
+          category: categoryId,
+          createdby: req.user._id,
+          account: accountId
+        };
+      })
+    );
 
-    const newTransaction = await Transaction.create({
-      ...req.body,
-      category: categoryId,
-      createdby: req.user._id,
-    });
+    const createdTransactions = await Transaction.insertMany(transactionsToCreate);
 
-    // Populate category and createdby with their names
-    const populatedTransaction = await Transaction.findById(newTransaction._id)
+    // Optional: populate category & createdby
+    const populated = await Transaction.find({
+      _id: { $in: createdTransactions.map((t) => t._id) },
+    })
       .populate("category", "name")
-      .populate("createdby", "username");
+      .populate("createdby", "username")
+      .populate("account",  "name");
 
-    res.status(201).json(populatedTransaction);
+    res.status(201).json(populated);
   } catch (error) {
-    console.error(error);
+    console.error("Transaction creation failed:", error);
     res.status(400).json({ message: error.message });
   }
 };
+
 
 ///===Get transaction all with filters===///
 const getTransactions = async (req, res) => {
@@ -61,7 +80,8 @@ const getTransactions = async (req, res) => {
     const transactions = await Transaction.find(filters)
       .sort({ date: -1 }) // recent first
       .populate("category", "name")
-      .populate("createdby", "username");
+      .populate("createdby", "username")
+      .populate("account",  "name");
 
     res.status(200).json(transactions);
   } catch (error) {
@@ -74,9 +94,10 @@ const getTransactions = async (req, res) => {
 
 const updatetransaction = async (req, res) => {
   try {
-    ///===verfif ownership===//
-    const transactionId = req.params.id;
-    await verifyTransactionOwnership(req.user._id, transactionId);
+     const accountId=req.user.account
+
+    //==verify access===//
+    await verifyAccountAccess(req.user._id, accountId);
 
     const updated = await Transaction.findByIdAndUpdate(
       req.params.id,
@@ -86,7 +107,8 @@ const updatetransaction = async (req, res) => {
       }
     )
       .populate("category", "name")
-      .populate("createdby", "username");
+      .populate("createdby", "username")
+      .populate("account",  "name");
     if (!updated) {
       return res.status(404).json({ message: "Transaction not found" });
     }
@@ -101,8 +123,8 @@ const updatetransaction = async (req, res) => {
 const deleteTransaction = async (req, res) => {
   try {
     ///===verfif ownership===//
-    const transactionId = req.params.id;
-    await verifyTransactionOwnership(req.user._id, transactionId);
+     const accountId=req.user.account
+    await verifyAccountAccess(req.user._id, accountId);
 
 
     const { id } = req.params;
@@ -123,13 +145,14 @@ const deleteTransaction = async (req, res) => {
 const gettransactionbyID = async (req, res) => {
   try {
     ///===verfif ownership===//
-    const transactionId = req.params.id;
-    await verifyTransactionOwnership(req.user._id, transactionId);
+    const accountId=req.user.account
+    await verifyAccountAccess(req.user._id, accountId);
 
     const { id } = req.params;
     const transaction = await Transaction.findById(id)
       .populate("category", "name")
-      .populate("createdby", "username");
+      .populate("createdby", "username")
+      .populate("account",  "name");
 
     if (!transaction) {
       return res.status(404).json({ message: "Transaction not found" });
