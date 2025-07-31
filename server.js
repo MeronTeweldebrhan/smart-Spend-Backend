@@ -5,6 +5,7 @@ import connection from './config/connection.js'
 import userRoutes from './routes/userRoutes.js'
 import transactionRoutes from './routes/transactionRoutes.js'
 import categoryRoutes from './routes/categoryRoutes.js'
+import accountRoutes from './routes/accountRoutes.js'
 
 dotenv.config()
 const app=express()
@@ -30,6 +31,7 @@ app.use(cors({
 app.use('/api/users',userRoutes)
 app.use('/api/transaction',transactionRoutes)
 app.use('/api/category',categoryRoutes)
+app.use('/api/accounts',accountRoutes)
 
 
 // app.use('/',(req,res)=>{

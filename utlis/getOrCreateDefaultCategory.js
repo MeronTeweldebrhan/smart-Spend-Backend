@@ -1,16 +1,18 @@
 
 import Category from "../models/Category.js";
 
-export const getOrCreateDefaultCategory = async (userId) => {
+export const getOrCreateDefaultCategory = async (userId,accountId) => {
   let category = await Category.findOne({
     name: "Uncategorized",
-    createdby: userId
+    createdby: userId,
+    account: accountId
   });
 
   if (!category) {
     category = await Category.create({
       name: "Uncategorized",
-      createdby: userId
+      createdby: userId,
+      account: accountId
     });
   }
 
@@ -18,10 +20,10 @@ export const getOrCreateDefaultCategory = async (userId) => {
 };
 
 ////
-export const resolveCategoryId = async (inputCategory, userId) => {
+export const resolveCategoryId = async (inputCategory, userId,accountId) => {
   // If category not provided, use default
   if (!inputCategory) {
-    return await getOrCreateDefaultCategory(userId);
+    return await getOrCreateDefaultCategory(userId,accountId);
   }
 
   // If it's a valid ObjectId (24 hex characters), assume it's already a valid ID
@@ -29,7 +31,7 @@ export const resolveCategoryId = async (inputCategory, userId) => {
   if (isValidObjectId) return inputCategory;
 
   // Try to find category by name
-  const categoryDoc = await Category.findOne({ name: inputCategory, createdby: userId });
+  const categoryDoc = await Category.findOne({ name: inputCategory, createdby: userId,account: accountId });
   if (!categoryDoc) {
     throw new Error(`Category '${inputCategory}' not found. Please provide a valid category.`);
   }

@@ -1,4 +1,5 @@
 import {Schema,model} from 'mongoose'
+import mongoose from 'mongoose'
 import bcrypt from 'bcrypt'
 
 const userSchema = new Schema({
@@ -19,7 +20,13 @@ const userSchema = new Schema({
     minlength: 4,
     required: [true, 'Password is required'],
 
-  }
+  },
+  account: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'Account',
+  required: true,
+},
+
 },{timestamps:true});
  
 // hash user password
