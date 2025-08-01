@@ -12,7 +12,7 @@ const app=express()
 
 app.use(express.json())
 const PORT = process.env.PORT || 3000
-const PROD_URL=process.env.PORT
+const PROD_URL=process.env.PROD_URL
 connection()
 ///==Cors Acess ==//
 const allowedOrgins =[
