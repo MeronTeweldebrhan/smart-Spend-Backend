@@ -12,17 +12,17 @@ const app=express()
 
 app.use(express.json())
 const PORT = process.env.PORT || 3000
-const PRODURL=process.env.PROD_URL || 'https://smartspends.netlify.app';
+const PROD_URL=process.env.PROD_URL ;
 connection()
 ///==Cors Acess ==//
 const allowedOrgins =[
-    PRODURL,
+    PROD_URL,
     'http://localhost:5173'
 ]
 app.use(cors({
-    origin:function (orgin,callback){
+    origin:function (origin,callback){
         console.log("Incoming origin:", origin); ////==>debug
-        if(!orgin || allowedOrgins.includes(orgin)){
+        if(!origin || allowedOrgins.includes(origin)){
             callback(null,true)
         } else{
             callback(new Error('CORS not allowed from this orgin :'+orgin))
