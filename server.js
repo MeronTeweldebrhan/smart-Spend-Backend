@@ -12,9 +12,11 @@ const app=express()
 
 app.use(express.json())
 const PORT = process.env.PORT || 3000
+const PROD_URL=process.env.PORT
 connection()
 ///==Cors Acess ==//
 const allowedOrgins =[
+    PROD_URL,
     'http://localhost:5173'
 ]
 app.use(cors({
