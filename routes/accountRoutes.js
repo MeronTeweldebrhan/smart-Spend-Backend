@@ -8,6 +8,7 @@ import {
   addCollaborator,
   removeCollaborator,
   listCollaborators,
+  getAccountById
 } from "../controllers/AccountController.js";
 import { authMiddleware } from "../utlis/auth.js";
 
@@ -20,6 +21,7 @@ router.post("/", createAccount);
 router.get("/", getAccounts);
 router.put("/:id", updateAccount);
 router.delete("/:id", deleteAccount);
+router.get("/:id",getAccountById)
 
 // Collaborator routes
 router.post("/:id/collaborators", addCollaborator);

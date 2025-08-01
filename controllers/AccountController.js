@@ -37,7 +37,22 @@ export const getAccounts = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+//==Get Account By Id===//
+export const getAccountById= async (req,res)=>{
+  try {
+    const accountId = req.body.accountId || req.query.accountId
 
+    //==verify access===//
+    await verifyAccountAccess(req.user._id, accountId);
+    const account =await Account.find({account:accountId})
+       .populate("owner", "username")
+      .populate("collaborators", "username email");
+      res.json(account);
+  } catch (error) {
+    console.error("Failed to fetch account:", err);
+    res.status(500).json({ message: err.message });
+  }
+}
 // Update account name or type (only owner)
 export const updateAccount = async (req, res) => {
   try {
@@ -55,7 +70,7 @@ export const updateAccount = async (req, res) => {
   }
 };
 
-// Delete account (only owner)
+// Delete account 
 export const deleteAccount = async (req, res) => {
   try {
     const accountId = req.params.id;
@@ -70,7 +85,7 @@ export const deleteAccount = async (req, res) => {
   }
 };
 
-// Add collaborator by email (only owner)
+// Add collaborator by email 
 export const addCollaborator = async (req, res) => {
   try {
     const { email } = req.body;
