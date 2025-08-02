@@ -123,11 +123,16 @@ const updatetransaction = async (req, res) => {
 const deleteTransaction = async (req, res) => {
   try {
     ///===verfif ownership===//
-     const accountId=req.body.accountId || req.query.accountId
+     const accountId= req.query.accountId
+     const { id } = req.params;
+
+    if (!accountId) {
+      return res.status(400).json({ message: "Missing accountId" });
+    }
     await verifyAccountAccess(req.user._id, accountId);
 
 
-    const { id } = req.params;
+    
   const deleted = await Transaction.findByIdAndDelete(id);
     if (!deleted) {
       return res.status(404).json({ message: "Transaction not found" });

@@ -4,7 +4,18 @@ import { verifyAccountAccess } from "../utlis/verifyOwnership.js";
 ///===Creat Category====///
 const createCategory = async (req, res) => {
   try {
-    const accountId = req.body.accountId
+    const { name, accountId } = req.body;
+    const userId = req.user._id;
+    // Check for existing category with same name (case-insensitive)
+    const existing = await Category.findOne({
+      name: { $regex: new RegExp(`^${name.trim()}$`, 'i') }, // case-insensitive match
+      createdby: userId,
+      account: accountId,
+    });
+
+    if (existing) {
+      return res.status(409).json({ message: `Category '${name}' already exists.` });
+    }
 
     //==verify access===//
     await verifyAccountAccess(req.user._id, accountId);
@@ -12,6 +23,7 @@ const createCategory = async (req, res) => {
     const category = await Category.create({
       ...req.body,
       createdby: req.user._id,
+       name: name.trim(),
       account:accountId
 
     });
