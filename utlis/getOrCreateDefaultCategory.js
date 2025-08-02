@@ -21,12 +21,11 @@ export const getOrCreateDefaultCategory = async (userId,accountId) => {
 
 ////
 export const resolveCategoryId = async (inputCategory, userId,accountId) => {
-  // If category not provided, use default
-  if (!inputCategory) {
+  // If category not provided or empty string, fallback to default
+  if (!inputCategory || typeof inputCategory !=="string" || inputCategory.trim() === "") {
     return await getOrCreateDefaultCategory(userId,accountId);
   }
-
-  // If it's a valid ObjectId (24 hex characters), assume it's already a valid ID
+// If it's a valid ObjectId, return directly
   const isValidObjectId = inputCategory.match(/^[0-9a-fA-F]{24}$/);
   if (isValidObjectId) return inputCategory;
 
