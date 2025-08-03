@@ -40,17 +40,17 @@ export const getAccounts = async (req, res) => {
 //==Get Account By Id===//
 export const getAccountById= async (req,res)=>{
   try {
-    const accountId = req.body.accountId || req.query.accountId
+    const { id: accountId } = req.params;
 
     //==verify access===//
     await verifyAccountAccess(req.user._id, accountId);
-    const account =await Account.find({account:accountId})
+    const account =await Account.findById(accountId)
        .populate("owner", "username")
       .populate("collaborators", "username email");
       res.json(account);
   } catch (error) {
-    console.error("Failed to fetch account:", err);
-    res.status(500).json({ message: err.message });
+    console.error("Failed to fetch account:", error);
+    res.status(500).json({ message: error.message });
   }
 }
 // Update account name or type (only owner)

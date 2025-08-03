@@ -37,9 +37,9 @@ app.use('/api/category',categoryRoutes)
 app.use('/api/accounts',accountRoutes)
 
 
-// app.use('/',(req,res)=>{
-//     res.json('smartSpend is runinig ')
-// })
+app.use('/',(req,res)=>{
+    res.json('smartSpend is runinig ')
+})
 
 
 app.listen(PORT,()=>{

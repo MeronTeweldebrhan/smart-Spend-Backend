@@ -1,20 +1,21 @@
 # SmartSpend – Expense Tracker App
 
-## Overview
+##  Overview
 SmartSpend is a full-stack web application that helps users track, categorize, and visualize their expenses. It supports secure user login, personal dashboards, transaction/category management, report generation, and account settings. Built to be scalable with multi-user collaboration in mind.
 
-## Home Page Screenshot
-
+##  Screenshot
 ![smartSpend](public/smartSpend.png)
 
-## 🔗 Links
+##  Links
 - Live Site: [https://smartspends.netlify.app](https://smartspends.netlify.app)
+
 
 ---
 
 ##  My Process
 
 ###  Built With
+- Java script
 - React
 - Tailwind CSS
 - Node.js & Express
@@ -22,10 +23,9 @@ SmartSpend is a full-stack web application that helps users track, categorize, a
 - JWT Authentication
 - bcrypt
 - cors
-- Netlify & Render (for deployment)
+- Netlify & Render for deployment
 - Chart libraries: `recharts`
 - State management via React Context API
-
 ---
 
 ###  What I Learned
@@ -36,32 +36,34 @@ SmartSpend is a full-stack web application that helps users track, categorize, a
 - **Bar chart visualizations**: Successfully implemented charting (after previous failed attempts in other projects) using `recharts`.
 - **JavaScript debugging**: Improved use of browser dev tools and `console.log()` for identifying runtime issues and async flow.
 - **Modular backend design**: Created clean route/controller structure for scalability and easier maintenance.
+- **Global Window Object**: Learned how to access various properties and methods globally using the window object.
 
 ---
 
-###  Continued Development
+### Continued Development
 Next steps I'm planning to implement:
 - **Team collaboration**:
-  - Invite collaborators with different privileges (e.g., admin, viewer).
-  - Admin (account creator) can assign roles and manage access.
+  - Invite collaborators with different privileges , admin, viewer.
+  - Admin account creator can assign roles and manage access.
 - **Import from Excel/PDF**:
-  - Automatically create transactions and categories from uploaded files.
-  - continue more and more to make best suitable app to solve finances problems 
+   - uploadeing batch datas form bank or credit statements pdf/excel that makea easier and save time.
+  - **Implement proper erorr handling using inline or using toast dependecies**:
+  - currently am using alert erorr handling messages to have basic user expernices
+  - implment Pagination and other styles for better data managment.
 
 ---
 
-
-### 📚 Useful Resources
+###  Useful Resources
 - [**MDN Web Docs**](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS/Errors): Helped understand and resolve complex CORS issues.
 - [**Mermaid.js**](https://www.mermaidchart.com/app/dashboard): Used to generate visual diagrams for app architecture and data flow.
-- [npm](https://www.npmjs.com/) :getinng rearching  open resources dependencies 
-- [**Recharts GitHub**](https://github.com/recharts/recharts): Open-source library used for rendering bar charts with transaction/category data.
+- [**Recharts **](https://recharts.org/en-US): Open-source library used for rendering bar charts with transaction/category data.
+- [ emojipedia](https://emojipedia.org/inbox-tray):for using some arrows signs
+-[**fivcon***](https://freesvgicons.com/search?q=financ) :using icon at app
 - **Stack Overflow & GitHub Issues**: For solving bugs and edge cases.
-
 
 ---
 
-## 👤 Author
+##  Author
 **Meron Qelati**  
 [Meron Teweldebrhan](www.linkedin.com/in/meron-teweldebrhan)  
 [Meron Teweldebrhan](https://github.com/yourusername)
@@ -70,10 +72,8 @@ Next steps I'm planning to implement:
 
 ## 🙏 Acknowledgments
 Big thanks to:
-- To Perscholas org for given us this oppurtunity to learn and grow for free.
+- To Perscholas org for given us this oppurtunity .
 - Our instructors **Colton** and **Abrham**
-- My fellow learners, especially **Manasa**, for sharing resources and support throughout the project
+- My fellow learners, for sharing resources and support throughout the project
 
-## 📸 WireFrame Screenshot
 
-![smartSpend](public/wireframe.png)
