@@ -27,6 +27,40 @@ SmartSpend is a full-stack web application that helps users track, categorize, a
 - Chart libraries: `recharts`
 - State management via React Context API
 ---
+## API End Piont
+```
+| Method | Endpoint           | Description                     |
+| ------ | ------------------ | --------------------------------|
+ Auth
+| ------ | ------------------ | --------------------------------|
+| POST   | `/register`       | Register a new user              |
+| GET    | `/login`          | login	Authenticate and login    |
+| ------ | ------------------ | --------------------------------|
+ Transactions
+| ------ | ------------------ | --------------------------------|
+| POST   | `/transaction`     | Create new transaction          |
+| GET    | `/transaction`     | Get all transactions for account|
+| GET    | `/transaction/:id` | Get single transaction by ID    |
+| PUT    | `/transaction/:id` | Update transaction              |
+| DELETE | `/transaction/:id` | Delete transaction              |
+| ------ | ---------------    | ------------------------------  |
+Categories                  |
+| ------ | --------------- | ------------------------------    |
+| POST   | `/category`     | Create new category               |
+| GET    | `/category`     | Get all categories for account   |
+| GET    | `/category/:id` | Get single category by ID        |
+| PUT    | `/category/:id` | Update category                  |
+| DELETE | `/category/:id` | Delete category                  |
+| ------ | --------------- | ------------------------------   |
+Accounts
+| ------ | -------------- | ----------------------------- |
+| POST   | `/account`     | Create new account            |
+| GET    | `/account`     | Get all owned/shared accounts |
+| GET    | `/account/:id` | Get account details by ID     |
+| PUT    | `/account/:id` | Update account (owner only)   |
+| DELETE | `/account/:id` | Delete account (owner only)   |
+
+```
 
 ###  What I Learned
 - **Table-wise displaying**: Handling large sets of transaction/category data efficiently with dynamic rendering.
