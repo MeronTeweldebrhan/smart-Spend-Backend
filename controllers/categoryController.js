@@ -18,7 +18,7 @@ const createCategory = async (req, res) => {
     }
 
     //==verify access===//
-    await verifyAccountAccess(req.user._id, accountId);
+    await verifyAccountAccess(req.user._id, accountId,'categories');
 
     const category = await Category.create({
       ...req.body,
@@ -43,7 +43,7 @@ const getcategory = async (req, res) => {
     const accountId = req.body.accountId || req.query.accountId
 
     //==verify access===//
-    await verifyAccountAccess(req.user._id, accountId);
+    await verifyAccountAccess(req.user._id, accountId,'categories');
 
     const category = await Category.find({account:accountId })
     .populate("createdby","username");
@@ -64,7 +64,7 @@ const getcategorybyid = async (req, res) => {
 
     if (!category) throw new Error("Category not found");
 
-    await verifyAccountAccess(req.user._id, category.account);
+    await verifyAccountAccess(req.user._id, category.account,'categories');
 
     const populated = await Category.findById(categoryId)
       .populate("createdby", "username")
@@ -84,7 +84,7 @@ const updateCategory =async (req,res)=>{
     const category = await Category.findById(categoryId);
     if (!category) throw new Error("Category not found");
 
-    await verifyAccountAccess(req.user._id, category.account);
+    await verifyAccountAccess(req.user._id, category.account,'categories');
 
     const updated = await Category.findByIdAndUpdate(categoryId, req.body, {
       new: true,
@@ -107,7 +107,7 @@ const deleteCategory=async (req,res)=>{
     const category = await Category.findById(categoryId);
     if (!category) throw new Error("Category not found");
 
-    await verifyAccountAccess(req.user._id, category.account);
+    await verifyAccountAccess(req.user._id, category.account,'categories');
 
     await Category.findByIdAndDelete(categoryId);
 

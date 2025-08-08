@@ -1,19 +1,33 @@
 
 import Account from "../models/Account.js";
 
-export const verifyAccountAccess = async (userId, accountId) => {
+export const verifyAccountAccess = async (userId, accountId,permissionKey = null) => {
   const account = await Account.findById(accountId);
 
   if (!account) {
     throw new Error("Account not found");
   }
-
+// --- Add these console.log statements ---
+    console.log("Logged-in User ID:", userId.toString());
+    console.log("Account Owner ID:", account.owner.toString());
+    // ------------------------------------------
   const isOwner = account.owner.toString() === userId.toString();
   const isCollaborator = account.collaborators.some(
     (collabId) => collabId.toString() === userId.toString()
   );
-
-  if (!isOwner && !isCollaborator) {
+  // New check for employee permissions
+    const isEmployee = account.employeeUsers.some(
+        (employee) => {
+            // Check if the user is an employee
+            const isUser = employee.user.toString() === userId.toString();
+            // Check if the employee has the specific permission
+            const hasPermission = permissionKey ? employee.permissions[permissionKey] : false;
+            // The employee is authorized if they have the permission or if we are not checking for a specific permission
+            return isUser && (!permissionKey || hasPermission);
+        }
+    );
+ console.log("Is Owner:", isOwner);
+  if (!isOwner && !isCollaborator&& !isEmployee) {
     throw new Error("You are not authorized to access this account");
   }
 

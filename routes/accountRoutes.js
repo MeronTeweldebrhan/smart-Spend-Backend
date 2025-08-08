@@ -5,6 +5,9 @@ import {
   getAccounts,
   updateAccount,
   deleteAccount,
+  addEmployee, // New import
+  updateEmployeePermissions, // New import
+  removeEmployee, // New import
   addCollaborator,
   removeCollaborator,
   listCollaborators,
@@ -22,6 +25,15 @@ router.get("/", getAccounts);
 router.put("/:id", updateAccount);
 router.delete("/:id", deleteAccount);
 router.get("/:id",getAccountById)
+
+router.use((req, res, next) => {
+    console.log(`Received ${req.method} request at path: ${req.originalUrl}`);
+    next(); // Pass the request to the next handler
+});
+// Employee management routes
+router.post("/:id/employees",  addEmployee);
+router.put("/:id/employees/:employeeId",  updateEmployeePermissions);
+router.delete("/:id/employees/:employeeId",  removeEmployee);
 
 // Collaborator routes
 router.post("/:id/collaborators", addCollaborator);
