@@ -3,7 +3,7 @@ import { verifyAccountAccess } from "../utlis/verifyOwnership.js";
 // Create
 export const createChartAccount = async (req, res) => {
   try {
-    const { name, type, code, description, accountId } = req.body;
+    const { name, type, description, accountId } = req.body;
     const userId = req.user._id;
 
     if (!name || !type || !accountId) {
@@ -25,19 +25,19 @@ export const createChartAccount = async (req, res) => {
     }
 
     // ✅ Auto-increment codeNumber logic
-    const lastAccount = await ChartOfAccount.findOne({ account: accountId })
-      .sort({ codeNumber: -1 })
-      .select("codeNumber");
+    const allAccounts = await ChartOfAccount.find({ account: accountId }).select("code").lean();
 
-    const nextCodeNumber = lastAccount ? lastAccount.codeNumber + 1 : 1000;
+    const nextCode = allAccounts.length > 0
+      ? allAccounts.sort((a, b) => parseInt(a.code, 10) - parseInt(b.code, 10))
+          .pop().code + 1
+      : 1000;
 
     // ✅ Create new chart of account
     const newAccount = await ChartOfAccount.create({
       name: name.trim(),
       type,
-      code,
+      code: nextCode.toString(),
       description,
-      codeNumber: nextCodeNumber,
       createdby: userId,
       account: accountId
     });
