@@ -11,7 +11,7 @@ export const createChartAccount = async (req, res) => {
     }
 
     // ✅ Verify account access
-    await verifyAccountAccess(userId, accountId);
+    await verifyAccountAccess(userId, accountId,["personal", "hotel"],'chartofaccounts');
 
     // ✅ Check if account already exists for this accountId
     const existing = await ChartOfAccount.findOne({
@@ -68,7 +68,7 @@ export const getChartAccounts = async (req, res) => {
     }
 
     // You can keep this line to verify access
-    await verifyAccountAccess(req.user._id, accountId);
+    await verifyAccountAccess(req.user._id, accountId,["personal", "hotel"],'chartofaccounts');
 
     const accounts = await ChartOfAccount.find({ account: accountId })
       .populate("createdby", "username")

@@ -1,7 +1,15 @@
 
 import Account from "../models/Account.js";
+import mongoose from "mongoose";
+export const verifyAccountAccess = async (userId, accountId,requiredType = null,permissionKey = null) => {
 
-export const verifyAccountAccess = async (userId, accountId,permissionKey = null) => {
+console.log("Checking access for user", userId, "to account", accountId);
+
+
+  // Check if accountId is a valid ObjectId and not null/undefined
+   if (!accountId || !mongoose.Types.ObjectId.isValid(accountId)) {
+        throw new Error("Invalid or missing accountId provided");
+    }
   const account = await Account.findById(accountId);
 
   if (!account) {
@@ -29,6 +37,31 @@ export const verifyAccountAccess = async (userId, accountId,permissionKey = null
  console.log("Is Owner:", isOwner);
   if (!isOwner && !isCollaborator&& !isEmployee) {
     throw new Error("You are not authorized to access this account");
+  }
+  // // New logic: Check the account type if a requiredType is provided
+  // if (requiredType && account.type !== requiredType) {
+  //   const error = new Error(`Access denied. This is not a ${requiredType} account.`);
+  //   error.statusCode = 403; // 403 Forbidden
+  //   throw error;
+  // }
+
+  // ✅ Allow one or more account types
+  if (requiredType) {
+    if (Array.isArray(requiredType)) {
+      if (!requiredType.includes(account.type)) {
+        const error = new Error(
+          `Access denied. This account must be one of: ${requiredType.join(", ")}.`
+        );
+        error.statusCode = 403;
+        throw error;
+      }
+    } else if (account.type !== requiredType) {
+      const error = new Error(
+        `Access denied. This is not a ${requiredType} account.`
+      );
+      error.statusCode = 403;
+      throw error;
+    }
   }
 
   return account; // return if needed (e.g. for owner check)
