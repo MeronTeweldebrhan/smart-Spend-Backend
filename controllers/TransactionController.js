@@ -151,7 +151,8 @@ const gettransactionbyID = async (req, res) => {
   try {
    
 
-    const { id } = req.params;
+    const { id, } = req.params;
+     const accountId = req.query.accountId;
     const transaction = await Transaction.findById(id)
       .populate("category", "name")
       .populate("createdby", "username")

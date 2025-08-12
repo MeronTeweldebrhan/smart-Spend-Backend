@@ -68,12 +68,13 @@ const getcategorybyid = async (req, res) => {
   try {
     ///===verfify ownership===//
     const { id: categoryId } = req.params;
+    
     const category = await Category.findById(categoryId);
 
     if (!category) throw new Error("Category not found");
 
 
-    await verifyAccountAccess(req.user._id, accountId,["personal", "hotel"],'categories');
+    await verifyAccountAccess(req.user._id, category.account,["personal", "hotel"],'categories');
 
 
     const populated = await Category.findById(categoryId)
@@ -95,7 +96,7 @@ const updateCategory = async (req, res) => {
     if (!category) throw new Error("Category not found");
 
 
-    await verifyAccountAccess(req.user._id, accountId,["personal", "hotel"],'categories');
+    await verifyAccountAccess(req.user._id, category.account,["personal", "hotel"],'categories');
 
 
     const updated = await Category.findByIdAndUpdate(categoryId, req.body, {

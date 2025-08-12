@@ -1,3 +1,4 @@
+// models/JournalEntry.js
 import mongoose from "mongoose";
 
 const journalLineSchema = new mongoose.Schema({
@@ -6,15 +7,15 @@ const journalLineSchema = new mongoose.Schema({
     ref: "ChartOfAccount",
     required: true,
   },
-  type: {
-    type: String,
-    enum: ["debit", "credit"],
-    required: true,
-  },
-  amount: {
+  debit: {
     type: Number,
-    required: true,
-    min: 0.01,
+    default: 0,
+    min: 0,
+  },
+  credit: {
+    type: Number,
+    default: 0,
+    min: 0,
   },
 });
 
@@ -32,19 +33,15 @@ const journalEntrySchema = new mongoose.Schema(
       validate: [
         {
           validator: function (lines) {
-            const debitTotal = lines
-              .filter((l) => l.type === "debit")
-              .reduce((sum, l) => sum + l.amount, 0);
-            const creditTotal = lines
-              .filter((l) => l.type === "credit")
-              .reduce((sum, l) => sum + l.amount, 0);
+            const debitTotal = lines.reduce((sum, l) => sum + l.debit, 0);
+            const creditTotal = lines.reduce((sum, l) => sum + l.credit, 0);
             return debitTotal === creditTotal;
           },
           message: "Debits and credits must be equal.",
         },
         {
           validator: (lines) => lines.length >= 2,
-          message: "A journal entry must have at least two line items.",
+          message: "A journal entry must have at least two lines.",
         },
       ],
     },
