@@ -2,41 +2,71 @@ import JournalEntry from "../models/JournalEntry.js";
 import { verifyAccountAccess } from "../utlis/verifyOwnership.js";
 
 export const createJournalEntry = async (req, res) => {
-  try {
-    const { date, description, accountId, lines } = req.body;
-    const userId = req.user._id;
+  try {
+    const { date, description, accountId, lines } = req.body;
+    const userId = req.user._id;
 
-    if (!accountId || !lines || lines.length < 2) {
-      return res.status(400).json({
-        error:
-          "Journal entry requires a valid accountId and at least two lines.",
-      });
-    }
+    // Initial validation for required fields
+    if (!accountId || !lines || lines.length < 2) {
+      return res.status(400).json({
+        error:
+          "Journal entry requires a valid accountId and at least two lines.",
+      });
+    }
 
-    // Validate total debits equal total credits
-    const totalDebit = lines.reduce((sum, line) => sum + (line.debit || 0), 0);
-    const totalCredit = lines.reduce((sum, line) => sum + (line.credit || 0), 0);
-    if (totalDebit !== totalCredit) {
-      return res.status(400).json({
-        error: "Total debit amount must equal total credit amount.",
-      });
-    }
+    let totalDebit = 0;
+    let totalCredit = 0;
 
-    await verifyAccountAccess(req.user._id, accountId, ["personal", "hotel"], "journalEntries");
+    // Validate each line individually (this is the missing logic)
+    for (const line of lines) {
+      // Check if an account is provided
+      if (!line.account) {
+        return res.status(400).json({ error: "Please select an account for all lines." });
+      }
 
-    const entry = await JournalEntry.create({
-      date,
-      description,
-      lines,
-      account: accountId,
-      createdby: userId,
-    });
+      // Ensure debit and credit are valid non-negative numbers
+      const debitNum = parseFloat(line.debit);
+      const creditNum = parseFloat(line.credit);
 
-    const populatedEntry = await entry.populate("lines.account", "code name type");
-    res.status(201).json(populatedEntry);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+      if (isNaN(debitNum) || debitNum < 0 || isNaN(creditNum) || creditNum < 0) {
+        return res.status(400).json({ error: "Amounts must be valid non-negative numbers." });
+      }
+
+      // Ensure exactly one of debit or credit is non-zero
+      if (!((debitNum > 0 && creditNum === 0) || (creditNum > 0 && debitNum === 0))) {
+        return res.status(400).json({ error: "Each line must have either debit or credit amount (not both)." });
+      }
+
+      totalDebit += debitNum;
+      totalCredit += creditNum;
+    }
+
+    // Validate that total debits and credits match
+    if (totalDebit !== totalCredit) {
+      return res.status(400).json({
+        error: "Total debit amount must equal total credit amount.",
+      });
+    }
+
+    await verifyAccountAccess(req.user._id, accountId, ["personal", "hotel"], "journalEntries");
+
+    const entry = await JournalEntry.create({
+      date,
+      description,
+      lines: lines.map((line) => ({
+        account: line.account,
+        debit: Number(line.debit),
+        credit: Number(line.credit),
+      })),
+      account: accountId,
+      createdby: userId,
+    });
+
+    const populatedEntry = await entry.populate("lines.account", "code name type");
+    res.status(201).json(populatedEntry);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 };
 
 export const getJournalEntries = async (req, res) => {
