@@ -8,28 +8,34 @@ const createCategory = async (req, res) => {
     const userId = req.user._id;
     // Check for existing category with same name (case-insensitive)
     const existing = await Category.findOne({
-      name: { $regex: new RegExp(`^${name.trim()}$`, 'i') }, // case-insensitive match
+      name: { $regex: new RegExp(`^${name.trim()}$`, "i") }, // case-insensitive match
       createdby: userId,
       account: accountId,
     });
 
     if (existing) {
-      return res.status(409).json({ message: `Category '${name}' already exists.` });
+      return res
+        .status(409)
+        .json({ message: `Category '${name}' already exists.` });
     }
 
     //==verify access===//
-    await verifyAccountAccess(req.user._id, accountId,'categories');
+    await verifyAccountAccess(
+      req.user._id,
+      accountId,
+      ["personal", "hotel"],
+      "categories"
+    );
 
     const category = await Category.create({
       ...req.body,
       createdby: req.user._id,
-       name: name.trim(),
-      account:accountId
-
+      name: name.trim(),
+      account: accountId,
     });
     const populatedCategory = await Category.findById(category._id)
-    .populate("createdby","username")
-    .populate("account", "name");
+      .populate("createdby", "username")
+      .populate("account", "name");
     res.status(201).json(populatedCategory);
   } catch (error) {
     console.error(error);
@@ -40,13 +46,20 @@ const createCategory = async (req, res) => {
 ///===get all users Categroy====///
 const getcategory = async (req, res) => {
   try {
-    const accountId = req.body.accountId || req.query.accountId
+    const accountId = req.body.accountId || req.query.accountId;
 
     //==verify access===//
-    await verifyAccountAccess(req.user._id, accountId,'categories');
+    await verifyAccountAccess(
+      req.user._id,
+      accountId,
+      ["personal", "hotel"],
+      "categories"
+    );
 
-    const category = await Category.find({account:accountId })
-    .populate("createdby","username");
+    const category = await Category.find({ account: accountId }).populate(
+      "createdby",
+      "username"
+    );
 
     res.json(category);
   } catch (error) {
@@ -59,12 +72,12 @@ const getcategory = async (req, res) => {
 const getcategorybyid = async (req, res) => {
   try {
     ///===verfify ownership===//
-     const { id: categoryId } = req.params;
+    const { id: categoryId } = req.params;
     const category = await Category.findById(categoryId);
 
     if (!category) throw new Error("Category not found");
 
-    await verifyAccountAccess(req.user._id, category.account,'categories');
+    await verifyAccountAccess(req.user._id, category.account, "categories");
 
     const populated = await Category.findById(categoryId)
       .populate("createdby", "username")
@@ -78,13 +91,18 @@ const getcategorybyid = async (req, res) => {
 };
 
 ///===update Catergroy===///
-const updateCategory =async (req,res)=>{
-    try {
-         const { id: categoryId } = req.params;
+const updateCategory = async (req, res) => {
+  try {
+    const { id: categoryId } = req.params;
     const category = await Category.findById(categoryId);
     if (!category) throw new Error("Category not found");
 
-    await verifyAccountAccess(req.user._id, category.account,'categories');
+    await verifyAccountAccess(
+      req.user._id,
+      category.account,
+      ["personal", "hotel"],
+      "categories"
+    );
 
     const updated = await Category.findByIdAndUpdate(categoryId, req.body, {
       new: true,
@@ -97,17 +115,22 @@ const updateCategory =async (req,res)=>{
     console.error(error);
     res.status(500).json({ message: error.message });
   }
-}
+};
 
 ///===Delete Category===//
 
-const deleteCategory=async (req,res)=>{
-    try {
-         const { id: categoryId } = req.params;
+const deleteCategory = async (req, res) => {
+  try {
+    const { id: categoryId } = req.params;
     const category = await Category.findById(categoryId);
     if (!category) throw new Error("Category not found");
 
-    await verifyAccountAccess(req.user._id, category.account,'categories');
+    await verifyAccountAccess(
+      req.user._id,
+      category.account,
+      ["personal", "hotel"],
+      "categories"
+    );
 
     await Category.findByIdAndDelete(categoryId);
 
@@ -116,5 +139,11 @@ const deleteCategory=async (req,res)=>{
     console.error(error);
     res.status(500).json({ message: error.message });
   }
-}
-export { createCategory, getcategory, getcategorybyid,updateCategory,deleteCategory };
+};
+export {
+  createCategory,
+  getcategory,
+  getcategorybyid,
+  updateCategory,
+  deleteCategory,
+};

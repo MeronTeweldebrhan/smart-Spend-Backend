@@ -9,22 +9,41 @@ export const createJournalEntry = async (req, res) => {
     // Add necessary backend validation
     if (!accountId || !lines || lines.length < 2) {
       return res.status(400).json({
-        error: "Journal entry requires a valid accountId and at least two lines.",
+        error:
+          "Journal entry requires a valid accountId and at least two lines.",
       });
     }
 
-    await verifyAccountAccess(userId, accountId);
-
+    await verifyAccountAccess(
+      req.user._id,
+      accountId,
+      ["personal", "hotel"],
+      "journalEntries"
+    );
+    // Validate total debits equal total credits
+    const totalDebit = lines.reduce((sum, line) => sum + (line.debit || 0), 0);
+    const totalCredit = lines.reduce(
+      (sum, line) => sum + (line.credit || 0),
+      0
+    );
+    if (totalDebit !== totalCredit) {
+      return res.status(400).json({
+        error: "Total debit amount must equal total credit amount.",
+      });
+    }
     // ✅ The payload is correctly structured in your frontend
     //    Here we destructure it and use it to create the entry.
     const entry = await JournalEntry.create({
       date,
       description,
       lines,
-      account: accountId, // 
-      createdby: userId, // 
+      account: accountId, //
+      createdby: userId, //
     });
-   const  populatedentry = await entry.populate("lines.account", "code name type");
+    const populatedentry = await entry
+      .populate("lines.account", "name code type") // ✅ correct population
+      .populate("createdby", "username")
+      .populate("account", "name");
     res.status(201).json(populatedentry);
   } catch (err) {
     // Return a more user-friendly error message
@@ -32,11 +51,17 @@ export const createJournalEntry = async (req, res) => {
   }
 };
 
-///===Get transaction all with filters===///
+///===Get Journal  all with filters===///
 export const getJournalEntries = async (req, res) => {
   try {
     const { accountId } = req.params;
-    await verifyAccountAccess(req.user._id, accountId);
+    
+    await verifyAccountAccess(
+      req.user._id,
+      accountId,
+      ["personal", "hotel"],
+      "journalEntries"
+    );
 
     const {
       type,
@@ -81,13 +106,21 @@ export const getJournalEntries = async (req, res) => {
   }
 };
 
-
 export const getJournalEntryById = async (req, res) => {
   try {
-    const entry = await JournalEntry.findById(req.params.id).populate("lines.account");
-    if (!entry) return res.status(404).json({ error: "Journal entry not found." });
+    const entry = await JournalEntry.findById(req.params.id)
+      .populate("lines.account", "name code type") // ✅ correct population
+      .populate("createdby", "username")
+      .populate("account", "name");
+    if (!entry)
+      return res.status(404).json({ error: "Journal entry not found." });
 
-    await verifyAccountAccess(req.user._id, entry.account);
+    await verifyAccountAccess(
+      req.user._id,
+      entry.account,
+      ["personal", "hotel"],
+      "journalEntries"
+    );
     res.json(entry);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -96,14 +129,26 @@ export const getJournalEntryById = async (req, res) => {
 
 export const updateJournalEntry = async (req, res) => {
   try {
-    const entry = await JournalEntry.findById(req.params.id);
-    if (!entry) return res.status(404).json({ error: "Journal entry not found." });
+    const { id: journalId } = req.params;
+    const entry = await JournalEntry.findById(journalId);
+    if (!entry)
+      return res.status(404).json({ error: "Journal entry not found." });
 
-    await verifyAccountAccess(req.user._id, entry.account);
+    await verifyAccountAccess(
+      req.user._id,
+      entry.account,
+      ["personal", "hotel"],
+      "journalEntries"
+    );
 
-    Object.assign(entry, req.body);
-    await entry.save();
-    res.json(entry);
+    const updated = await JournalEntry.findByIdAndUpdate(journalId, req.body, {
+      new: true,
+    })
+      .populate("lines.account", "name code type") // ✅ correct population
+      .populate("createdby", "username")
+      .populate("account", "name");
+
+    res.json(updated);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -111,12 +156,19 @@ export const updateJournalEntry = async (req, res) => {
 
 export const deleteJournalEntry = async (req, res) => {
   try {
-    const entry = await JournalEntry.findById(req.params.id);
-    if (!entry) return res.status(404).json({ error: "Journal entry not found." });
+    const { id: journalId } = req.params;
+    const entry = await JournalEntry.findById(journalId);
+    if (!entry)
+      return res.status(404).json({ error: "Journal entry not found." });
 
-    await verifyAccountAccess(req.user._id, entry.account);
+    await verifyAccountAccess(
+      req.user._id,
+      entry.account,
+      ["personal", "hotel"],
+      "journalEntries"
+    );
 
-    await entry.remove();
+    await JournalEntry.findByIdAndDelete(journalId);
     res.json({ message: "Journal entry deleted successfully." });
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -1,7 +1,7 @@
 
 import Account from "../models/Account.js";
 
-export const verifyAccountAccess = async (userId, accountId,permissionKey = null) => {
+export const verifyAccountAccess = async (userId, accountId,requiredType = null,permissionKey = null) => {
   const account = await Account.findById(accountId);
 
   if (!account) {
@@ -29,6 +29,23 @@ export const verifyAccountAccess = async (userId, accountId,permissionKey = null
  console.log("Is Owner:", isOwner);
   if (!isOwner && !isCollaborator&& !isEmployee) {
     throw new Error("You are not authorized to access this account");
+  }
+   if (requiredType) {
+    if (Array.isArray(requiredType)) {
+      if (!requiredType.includes(account.type)) {
+        const error = new Error(
+          `Access denied. This account must be one of: ${requiredType.join(", ")}.`
+        );
+        error.statusCode = 403;
+        throw error;
+      }
+    } else if (account.type !== requiredType) {
+      const error = new Error(
+        `Access denied. This is not a ${requiredType} account.`
+      );
+      error.statusCode = 403;
+      throw error;
+    }
   }
 
   return account; // return if needed (e.g. for owner check)
