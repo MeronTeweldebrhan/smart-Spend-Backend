@@ -1,5 +1,6 @@
 import ChartOfAccount from "../models/ChartofAccount.js";
 import { verifyAccountAccess } from "../utlis/verifyOwnership.js";
+import JournalEntry from "../models/JournalEntry.js";
 // Create
 export const createChartAccount = async (req, res) => {
   try {
@@ -42,6 +43,7 @@ export const createChartAccount = async (req, res) => {
 
     // ✅ Create new chart of account
     const newAccount = await ChartOfAccount.create({
+      ...req.body,
       name: name.trim(),
       type,
       code: nextCode.toString(),
@@ -75,7 +77,7 @@ export const getChartAccounts = async (req, res) => {
     }
 
     // You can keep this line to verify access
-    await verifyAccountAccess(req.user._id, accountId,["personal", "hotel"],'chartofaccounts');
+    await verifyAccountAccess(userId , accountId,["personal", "hotel"],'chartofaccounts');
 
     const accounts = await ChartOfAccount.find({ account: accountId })
       .populate("createdby", "username")
@@ -86,7 +88,30 @@ export const getChartAccounts = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+///===Get Single Chartofaccount===///
+export const getChartAccountsbyid = async (req, res) => {
+  try {
+    ///===verfify ownership===//
+    const { id: coaId } = req.params;
+    
+    const coa = await ChartOfAccount.findById(coaId);
 
+    if (!coa) throw new Error("Category not found");
+
+
+    await verifyAccountAccess(req.user._id, coa.account,["personal", "hotel"],'categories');
+
+
+    const populated = await ChartOfAccount.findById(coaId)
+      .populate("createdby", "username")
+      .populate("account", "name");
+
+    res.json(populated);
+  } catch (error) {
+    console.error(error.message);
+    res.status(404).json({ message: error.message });
+  }
+};
 // Update
 export const updateChartAccount = async (req, res) => {
   try {
@@ -113,20 +138,29 @@ export const updateChartAccount = async (req, res) => {
 export const deleteChartAccount = async (req, res) => {
   try {
     const { id } = req.params;
-    const deleted = await ChartOfAccount.findOneAndDelete({
-      _id: id,
+
+    const coa = await ChartOfAccount.findOne({ _id: id, account: req.user.account });
+    if (!coa) {
+      return res.status(404).json({ message: "Chart of account not found" });
+    }
+
+    await verifyAccountAccess(req.user._id, coa.account, ["personal", "hotel"], "chartofaccounts");
+
+    const linkedTransactionsCount = await JournalEntry.countDocuments({
       account: req.user.account,
+      "lines.account": id
     });
-      await verifyAccountAccess(
-      req.user._id,
-      deleted.account,
-      ["personal", "hotel"],
-      "chartofaccounts"
-    );
-    
-    if (!deleted) return res.status(404).json({ message: "Not found" });
-    res.status(200).json({ message: "Deleted successfully" });
+
+    if (linkedTransactionsCount > 0) {
+      return res.status(400).json({
+        message: `Cannot delete "${coa.name}" because it has ${linkedTransactionsCount} linked transaction(s) please delete those transaction first!!.`
+      });
+    }
+
+    await ChartOfAccount.deleteOne({ _id: id });
+    res.json({ message: "Chart of account deleted successfully" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: "Error deleting chart of account" });
   }
 };
+

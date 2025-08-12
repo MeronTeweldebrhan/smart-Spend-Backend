@@ -9,6 +9,7 @@ import accountRoutes from './routes/accountRoutes.js'
 import journalRoutes from './routes/journalEntryRoutes.js'
 import chartaccountRoutes from './routes/chartofAcoountRoutes.js'
 import hotelRoutes from './routes/hotelRoutes.js'
+import reportRoutes from './routes/reportsRoutes.js'
 dotenv.config()
 const app=express()
 
@@ -40,6 +41,7 @@ app.use('/api/accounts',accountRoutes)
 app.use('/api/journals',journalRoutes)
 app.use('/api/chartofaccounts',chartaccountRoutes)
 app.use('/api/hotel',hotelRoutes)
+app.use('/api/reports',reportRoutes)
 
 app.use('/',(req,res)=>{
     res.json('smartSpend is runinig ')

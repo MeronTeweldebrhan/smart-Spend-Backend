@@ -4,6 +4,7 @@ import {
   getChartAccounts,
   updateChartAccount,
   deleteChartAccount,
+  getChartAccountsbyid
 } from "../controllers/chartofAccountController.js"
 import { authMiddleware } from "../utlis/auth.js";
 
@@ -15,6 +16,7 @@ router.post('/',createChartAccount)
 router.get('/',getChartAccounts)
 router.put('/:id',updateChartAccount)
 router.delete('/:id', deleteChartAccount)
+router.get('/:id',getChartAccountsbyid)
 
 
 export default router

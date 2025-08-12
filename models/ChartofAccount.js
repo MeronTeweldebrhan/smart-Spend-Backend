@@ -6,7 +6,7 @@ const chartOfAccountSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true }, // e.g., Cash on Hand, Utilities Expense
     type: {
       type: String,
-      enum: ["Asset", "Liability", "Equity", "Income", "Expense"],
+      enum: ["Asset", "Liability", "Equity", "Revenue", "Expense"],
       required: true,
     },
     description: { type: String },
