@@ -20,12 +20,9 @@ const createCategory = async (req, res) => {
     }
 
     //==verify access===//
-    await verifyAccountAccess(
-      req.user._id,
-      accountId,
-      ["personal", "hotel"],
-      "categories"
-    );
+
+    await verifyAccountAccess(req.user._id, accountId,["personal", "hotel"],'categories');
+
 
     const category = await Category.create({
       ...req.body,
@@ -49,12 +46,10 @@ const getcategory = async (req, res) => {
     const accountId = req.body.accountId || req.query.accountId;
 
     //==verify access===//
-    await verifyAccountAccess(
-      req.user._id,
-      accountId,
-      ["personal", "hotel"],
-      "categories"
-    );
+
+
+  await verifyAccountAccess(req.user._id, accountId,["personal", "hotel"],'categories');
+
 
     const category = await Category.find({ account: accountId }).populate(
       "createdby",
@@ -77,7 +72,9 @@ const getcategorybyid = async (req, res) => {
 
     if (!category) throw new Error("Category not found");
 
-    await verifyAccountAccess(req.user._id, category.account, "categories");
+
+    await verifyAccountAccess(req.user._id, accountId,["personal", "hotel"],'categories');
+
 
     const populated = await Category.findById(categoryId)
       .populate("createdby", "username")
@@ -97,12 +94,9 @@ const updateCategory = async (req, res) => {
     const category = await Category.findById(categoryId);
     if (!category) throw new Error("Category not found");
 
-    await verifyAccountAccess(
-      req.user._id,
-      category.account,
-      ["personal", "hotel"],
-      "categories"
-    );
+
+    await verifyAccountAccess(req.user._id, accountId,["personal", "hotel"],'categories');
+
 
     const updated = await Category.findByIdAndUpdate(categoryId, req.body, {
       new: true,

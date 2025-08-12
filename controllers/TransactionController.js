@@ -162,7 +162,7 @@ const gettransactionbyID = async (req, res) => {
     }
      ///===verfif ownership===//
     
-    await verifyAccountAccess(req.user._id, transaction.account._id,["personal", "hotel"],'transactions');
+    await verifyAccountAccess(req.user._id, accountId,["personal", "hotel"],'transactions');
     res.json(transaction);
   } catch (error) {
     console.error(error);
