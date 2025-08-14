@@ -87,19 +87,34 @@ const getRoomById = async (req, res) => {
 const updateRoom = async (req, res) => {
     try {
         const { id: roomId } = req.params;
+        const { roomNumber, accountId } = req.body; // Extract roomNumber and accountId from the request body
         const userId = req.user._id;
-        
+
         const room = await HotelRoom.findById(roomId);
 
         if (!room) {
-            throw new Error("Room not found");
+            return res.status(404).json({ message: "Room not found" });
         }
 
         // Verify user has access to the room's account
-        await verifyAccountAccess(userId, accountId, 'hotel', 'rooms');
+        await verifyAccountAccess(userId, room.account, 'hotel', 'rooms');
+
+        // Check if the new roomNumber already exists on another room in the same account
+        // We only need to check if the roomNumber is being changed
+        if (roomNumber && roomNumber.trim() !== room.roomNumber) {
+            const existingRoom = await HotelRoom.findOne({
+                roomNumber: roomNumber.trim(),
+                account: room.account,
+            });
+
+            if (existingRoom) {
+                return res.status(409).json({ message: `Room number '${roomNumber}' already exists.` });
+            }
+        }
 
         const updatedRoom = await HotelRoom.findByIdAndUpdate(roomId, req.body, {
             new: true, // Return the updated document
+            runValidators: true, // Run model validators on update
         })
         .populate("createdBy", "username")
         .populate("account", "name");
@@ -110,6 +125,7 @@ const updateRoom = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
 
 ///=== Delete Room ===///
 const deleteRoom = async (req, res) => {
