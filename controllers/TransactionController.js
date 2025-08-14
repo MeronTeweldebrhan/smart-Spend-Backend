@@ -12,7 +12,7 @@ const creatTransaction = async (req, res) => {
       throw new Error("Missing account ID in transaction payload");
     }
     // Ensure user has access to the target account
-    await verifyAccountAccess(req.user._id, accountId,'transactions');
+    await verifyAccountAccess(req.user._id, accountId,["personal", "hotel"],'transactions');
     const transactionsToCreate = await Promise.all(
       payload.map(async (txn) => {
         const categoryId = await resolveCategoryId(txn.category, req.user._id,accountId);
@@ -49,7 +49,7 @@ const getTransactions = async (req, res) => {
   try {
     // ///===verfif ownership===//
     const { accountId } = req.query;
-    await verifyAccountAccess(req.user._id, accountId,'transactions');
+    await verifyAccountAccess(req.user._id, accountId,["personal", "hotel"],'transactions');
     const {
       type, // income or expense
       category, // category ObjectId
@@ -97,7 +97,7 @@ const updatetransaction = async (req, res) => {
      const accountId=req.body.accountId || req.query.accountId
 
     //==verify access===//
-    await verifyAccountAccess(req.user._id, accountId,'transactions');
+    await verifyAccountAccess(req.user._id, accountId,["personal", "hotel"],'transactions');
 
     const updated = await Transaction.findByIdAndUpdate(
       req.params.id,
@@ -129,7 +129,7 @@ const deleteTransaction = async (req, res) => {
     if (!accountId) {
       return res.status(400).json({ message: "Missing accountId" });
     }
-    await verifyAccountAccess(req.user._id, accountId,'transactions');
+    await verifyAccountAccess(req.user._id, accountId,["personal", "hotel"],'transactions');
 
 
     
@@ -151,7 +151,8 @@ const gettransactionbyID = async (req, res) => {
   try {
    
 
-    const { id } = req.params;
+    const { id, } = req.params;
+     const accountId = req.query.accountId;
     const transaction = await Transaction.findById(id)
       .populate("category", "name")
       .populate("createdby", "username")
@@ -162,7 +163,7 @@ const gettransactionbyID = async (req, res) => {
     }
      ///===verfif ownership===//
     
-    await verifyAccountAccess(req.user._id, transaction.account._id,'transactions');
+    await verifyAccountAccess(req.user._id, accountId,["personal", "hotel"],'transactions');
     res.json(transaction);
   } catch (error) {
     console.error(error);

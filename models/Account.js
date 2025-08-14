@@ -27,7 +27,7 @@ const accountSchema = new Schema(
     },
     type: {
       type: String,
-      enum: ["personal", "Family","Business", "Group", "hotel"],
+      enum: ["personal", "Family","Business", "Group", "hotel","GenralBussiness"],
       default: "personal",
     },
     owner: {
