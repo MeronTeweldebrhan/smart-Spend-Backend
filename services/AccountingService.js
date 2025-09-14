@@ -4,49 +4,7 @@ import ChartOfAccount from "../models/ChartofAccount.js";
 import mongoose from "mongoose";
 
 class AccountingService {
-  /**
-   * Creates a journal entry with debit/credit lines.
-   */
-  static async createJournalEntry({ date, description, accountId, lines, userId }) {
-    // Validate total debits = credits with floating point tolerance
-    const totalDebit = lines.reduce((sum, l) => sum + (l.debit || 0), 0);
-    const totalCredit = lines.reduce((sum, l) => sum + (l.credit || 0), 0);
-    if (Math.abs(totalDebit - totalCredit) > 0.0001) {
-      throw new Error("Total debits must equal total credits.");
-    }
-    if (lines.length < 2) {
-      throw new Error("At least two lines are required.");
-    }
-
-    // Validate all accounts belong to this accountId
-    const accountIds = lines.map(l => l.accountId);
-    const validAccounts = await ChartOfAccount.find({
-      _id: { $in: accountIds },
-      account: accountId
-    });
-    if (validAccounts.length !== lines.length) {
-      throw new Error("One or more accounts are invalid for this company.");
-    }
-
-    // Map lines to schema
-    const formattedLines = lines.map(l => ({
-      account: l.accountId,
-      debit: l.debit || 0,
-      credit: l.credit || 0
-    }));
-
-    // Create and return journal entry
-    const entry = await JournalEntry.create({
-      date,
-      description,
-      lines: formattedLines,
-      account: accountId,
-      createdby: userId, // ✅ fixed casing
-    });
-
-    return entry.populate("lines.account", "code name type");
-  }
-
+  
   /**
    * Generates a Trial Balance for a given account within a date range.
    */
@@ -149,6 +107,34 @@ class AccountingService {
 
     return { revenue, expenses, netIncome, details: balances };
   }
+/**
+ * Generates a Cash Flow Statement for a given account within a date range.
+ */
+static async getCashFlow({ accountId, startDate, endDate }) {
+  // Get Net Income from Income Statement
+  const incomeStatement = await this.getIncomeStatement({ accountId, startDate, endDate });
+
+  // Get Balance Sheet at start & end dates
+  const openingBS = await this.getBalanceSheet({ accountId, endDate: startDate });
+  const closingBS = await this.getBalanceSheet({ accountId, endDate });
+
+  // Changes in balance sheet accounts
+  const deltaAssets = closingBS.totalAssets - openingBS.totalAssets;
+  const deltaLiabilities = closingBS.totalLiabilities - openingBS.totalLiabilities;
+  const deltaEquity = closingBS.totalEquity - openingBS.totalEquity;
+
+  return {
+    netIncome: incomeStatement.netIncome,
+    operatingActivities: incomeStatement.netIncome + deltaLiabilities - deltaAssets,
+    investingActivities: 0, // extend later if you want to track fixed assets separately
+    financingActivities: deltaEquity,
+    netCashFlow: incomeStatement.netIncome + deltaLiabilities - deltaAssets + deltaEquity,
+    details: {
+      openingCash: openingBS.totalAssets, // naive: treat all assets as cash
+      closingCash: closingBS.totalAssets,
+    }
+  };
+}
 
   /**
    * Generates a Balance Sheet for a given account as of a specific date.
@@ -206,5 +192,7 @@ class AccountingService {
     };
   }
 }
+
+
 
 export default AccountingService;
