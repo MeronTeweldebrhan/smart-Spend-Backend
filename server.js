@@ -3,13 +3,14 @@ import dotenv from 'dotenv'
 import cors from 'cors'
 import connection from './config/connection.js'
 import userRoutes from './routes/userRoutes.js'
-import transactionRoutes from './routes/transactionRoutes.js'
-import categoryRoutes from './routes/categoryRoutes.js'
 import accountRoutes from './routes/accountRoutes.js'
 import journalRoutes from './routes/journalEntryRoutes.js'
 import chartaccountRoutes from './routes/chartofAcoountRoutes.js'
 import hotelRoutes from './routes/hotelRoutes.js'
 import reportRoutes from './routes/reportsRoutes.js'
+import storeRoutes from './routes/storeRoutes.js'
+import vendorRoutes from './routes/vendorRoutes.js'
+import DepartmentRoutes from './routes/DepartmentRoutes.js'
 dotenv.config()
 const app=express()
 
@@ -20,7 +21,7 @@ connection()
 ///==Cors Acess ==//
 const allowedOrgins =[
     PRODURL,
-    'http://localhost:5173'
+    'http://localhost:5173','http://localhost:5174'
 ]
 app.use(cors({
     origin:function (origin,callback){
@@ -28,20 +29,21 @@ app.use(cors({
         if(!origin || allowedOrgins.includes(origin)){
             callback(null,true)
         } else{
-            callback(new Error('CORS not allowed from this orgin :'+orgin))
+            callback(new Error('CORS not allowed from this orgin :'+origin))
         }
     }
 }))
 
 ///====ROUTES====///
 app.use('/api/users',userRoutes)
-app.use('/api/transaction',transactionRoutes)
-app.use('/api/category',categoryRoutes)
 app.use('/api/accounts',accountRoutes)
 app.use('/api/journals',journalRoutes)
 app.use('/api/chartofaccounts',chartaccountRoutes)
 app.use('/api/hotel',hotelRoutes)
 app.use('/api/reports',reportRoutes)
+app.use('/api/store',storeRoutes)
+app.use('/api/vendor',vendorRoutes)
+app.use('/api/departments',DepartmentRoutes)
 
 app.use('/',(req,res)=>{
     res.json('smartSpend is runinig ')

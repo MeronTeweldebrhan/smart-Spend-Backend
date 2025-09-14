@@ -9,6 +9,11 @@ const chartOfAccountSchema = new mongoose.Schema(
       enum: ["Asset", "Liability", "Equity", "Revenue", "Expense"],
       required: true,
     },
+    subtype: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SubType",
+      required: false, // Optional field
+    },
     description: { type: String },
     account: {
       type: mongoose.Schema.Types.ObjectId,
@@ -20,8 +25,9 @@ const chartOfAccountSchema = new mongoose.Schema(
           ref: "User",
           required: true,
         },
+        balance: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
-
-export default mongoose.model("ChartOfAccount", chartOfAccountSchema);
+// Prevent model overwrite by checking if model exists
+export default mongoose.models.ChartOfAccount || mongoose.model('ChartOfAccount', chartOfAccountSchema);

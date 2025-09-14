@@ -37,13 +37,6 @@ console.log("Checking access for user", userId, "to account", accountId);
   if (!isOwner && !isCollaborator && !isEmployee) {
     throw new Error("You are not authorized to access this account");
   }
-  // // New logic: Check the account type if a requiredType is provided
-  // if (requiredType && account.type !== requiredType) {
-  //   const error = new Error(`Access denied. This is not a ${requiredType} account.`);
-  //   error.statusCode = 403; // 403 Forbidden
-  //   throw error;
-  // }
-
   // ✅ Allow one or more account types
   if (requiredType) {
     if (Array.isArray(requiredType)) {

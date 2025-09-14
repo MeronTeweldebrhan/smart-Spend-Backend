@@ -24,5 +24,13 @@ router.get("/balance-sheet", async (req, res) => {
 } catch (error) {
     res.status(500).json({ error: error.message });}
 });
-
+// ✅ NEW Cash Flow endpoint
+router.get("/cash-flow", async (req, res) => {
+  try {
+    const reports = await AccountingService.getCashFlow(req.query);
+    res.json(reports);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 export default router

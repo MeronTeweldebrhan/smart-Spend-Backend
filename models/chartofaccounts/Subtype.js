@@ -1,15 +1,12 @@
 import mongoose from "mongoose";
-import { Schema, model } from "mongoose";
 
-const categorySchema = new Schema(
+const subTypeSchema = new mongoose.Schema(
   {
-    name: {
+    name: { type: String, required: true, trim: true }, // e.g., Current Asset, Fixed Asset
+    type: {
       type: String,
+      enum: ["Asset", "Liability", "Equity", "Revenue", "Expense"],
       required: true,
-      unique: true,
-    },
-    description: {
-      type: String,
     },
     createdby: {
       type: mongoose.Schema.Types.ObjectId,
@@ -25,6 +22,4 @@ const categorySchema = new Schema(
   { timestamps: true }
 );
 
-const Category = model("Category", categorySchema);
-
-export default Category;
+export default mongoose.models.SubType || mongoose.model('SubType', subTypeSchema);
